@@ -1,6 +1,7 @@
 import numpy as np
+import cv2
 
-from environment import ParkingLot
+from environment import ParkingLot, Cars, Walls
 
 
 def get_start_vars(lower, upper, prompt):
@@ -28,6 +29,15 @@ def main():
     # Setting up the starting position.
     start_pos = np.array([x, y])
     # Defining the walls and cars in the environment.
+
+    car = Cars()
+    end, cars = car.generate_cars(parking_spot)
+    wall = Walls()
+    parkinglot = ParkingLot(cars, wall.get_walls())
+    parkinglot.generate_obstacles()
+    r = parkinglot.render_frame()
+    cv2.imshow("test", r)
+    key = cv2.waitKey(0)
 
 
 if __name__ == "__main__":

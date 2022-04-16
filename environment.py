@@ -3,14 +3,25 @@ import numpy as np
 
 
 class ParkingLot:
-    def __init__(self):
-        pass
+    def __init__(self, cars, walls):
+        self.obstacles = np.vstack([cars, walls])
+        self.margin = 1
+        self.background = np.ones((1000 + 20 * self.margin, 1000 + 20 * self.margin, 3))
+        self.background[10:1000 + 20 * self.margin:10, :] = np.array([200, 200, 200]) / 255
+        self.background[:, 10:1000 + 20 * self.margin:10] = np.array([200, 200, 200]) / 255
+        self.generate_obstacles()
 
     def generate_obstacles(self):
-        pass
+        obstacles = np.concatenate([np.array([[0, i] for i in range(100 + 2 * self.margin)]),
+                                    np.array([[100 + 2 * self.margin - 1, i] for i in range(100 + 2 * self.margin)]),
+                                    np.array([[i, 0] for i in range(100 + 2 * self.margin)]),
+                                    np.array([[i, 100 + 2 * self.margin - 1] for i in range(100 + 2 * self.margin)]),
+                                    self.obstacles + np.array([self.margin, self.margin])]) * 10
+        for ob in obstacles:
+            self.background[ob[1]:ob[1] + 10, ob[0]:ob[0] + 10] = 0
 
     def render_frame(self):
-        pass
+        return self.background
 
 
 class Cars:
@@ -28,7 +39,7 @@ class Cars:
         self.end = self.cars[parking_spot][0]
         self.cars.pop(parking_spot)
         for key in self.cars.keys():
-            for x in range(len(self.cars[key])):
+            for count in range(len(self.cars[key])):
                 obstacle = self.car_object + self.cars[key]
                 self.car_obstacles = np.append(self.car_obstacles, obstacle)
                 self.car_obstacles = np.array(self.car_obstacles).reshape(-1, 2)
@@ -48,6 +59,7 @@ class Walls:
                      [[30, i] for i in range(10, 105)] + \
                      [[i, 10] for i in range(30, 36)] + \
                      [[i, 90] for i in range(70, 76)]
+        self.walls = np.array(self.walls)
 
     def get_walls(self):
         return self.walls
