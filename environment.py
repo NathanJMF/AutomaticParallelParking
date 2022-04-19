@@ -36,9 +36,14 @@ class ParkingLot:
         agent_body = agent_body + np.array([x, y])
         self.frame = cv2.fillPoly(self.background.copy(), np.int32([agent_body]), car.car_colour)
 
-        agent_wheels = car.wheel_layout
-        agent_wheels = agent_wheels + np.array([x, y])
-        self.frame = cv2.fillPoly(self.frame, np.int32([agent_wheels]), car.wheel_colour)
+        agent_wheel_base = car.wheel_base
+        agent_wheel = car.wheel_layout
+
+        agent_wheel_base = self.rotate_contours(agent_wheel_base, self.ar([0.5, 0.5]), self.rad(angle))
+        for count, wheel in enumerate(agent_wheel_base):
+            tire = self.rotate_contours(agent_wheel, self.ar([0.5, 0.5]), self.rad(angle))
+            tire = tire + np.array([x, y]) + wheel
+            self.frame = cv2.fillPoly(self.frame, np.int32([tire]), car.wheel_colour)
         return self.frame
 
     def rotate_contours(self, pts, cnt, ang):
@@ -57,6 +62,7 @@ class Agent:
         self.wheel_width = 10
         self.wheel_diameter = 20
         self.wheel_colour = np.array([0, 0, 0]) / 255
+        self.wheel_base = np.array([[25, 15], [25, -15], [-25, 15], [-25, -15]])
         self.wheel_layout = np.array([[+self.wheel_diameter / 2, +self.wheel_width / 2],
                                       [+self.wheel_diameter / 2, -self.wheel_width / 2],
                                       [-self.wheel_diameter / 2, -self.wheel_width / 2],
