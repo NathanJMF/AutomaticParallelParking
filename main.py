@@ -37,7 +37,7 @@ def main():
     parkinglot.generate_obstacles()
     r = parkinglot.render_frame(agent, x, y, angle)
     cv2.imshow("test", r)
-    key = cv2.waitKey(0)
+    cv2.waitKey(0)
 
 
 if __name__ == "__main__":

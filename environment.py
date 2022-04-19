@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-from scipy import ndimage
+import scipy
 
 
 class ParkingLot:
@@ -10,6 +10,13 @@ class ParkingLot:
         self.margin = 1
         self.background = np.ones((1000 + 20 * self.margin, 1000 + 20 * self.margin, 3))
         self.generate_obstacles()
+
+        self.ar = scipy.array
+        self.rad = lambda ang: ang * self.pi / 180
+        self.pi = scipy.pi
+        self.sin = scipy.sin
+        self.cos = scipy.cos
+        self.dot = scipy.dot
 
     def generate_obstacles(self):
         obstacles = np.concatenate([np.array([[0, i] for i in range(100 + 2 * self.margin)]),
@@ -23,13 +30,19 @@ class ParkingLot:
     def render_frame(self, car, x, y, angle):
         x = int(10 * x)
         y = int(10 * y)
+
         agent_body = car.car_body
+        agent_body = self.rotate_contours(agent_body, self.ar([0.5, 0.5]), self.rad(angle))
         agent_body = agent_body + np.array([x, y])
         self.frame = cv2.fillPoly(self.background.copy(), np.int32([agent_body]), car.car_colour)
+
         agent_wheels = car.wheel_layout
         agent_wheels = agent_wheels + np.array([x, y])
         self.frame = cv2.fillPoly(self.frame, np.int32([agent_wheels]), car.wheel_colour)
         return self.frame
+
+    def rotate_contours(self, pts, cnt, ang):
+        return self.dot(pts - cnt, self.ar([[self.cos(ang), self.sin(ang)], [-self.sin(ang), self.cos(ang)]])) + cnt
 
 
 class Agent:
@@ -54,15 +67,15 @@ class Cars:
     def __init__(self):
         self.car_object = self.create_car_object()
         self.end = None
-        self.cars = {1:  [[15, 37]],
-                     2:  [[27, 37]],
-                     3:  [[39, 37]],
-                     4:  [[51, 37]],
-                     5:  [[63, 37]],
-                     6:  [[15, 63]],
-                     7:  [[27, 63]],
-                     8:  [[39, 63]],
-                     9:  [[51, 63]],
+        self.cars = {1: [[15, 37]],
+                     2: [[27, 37]],
+                     3: [[39, 37]],
+                     4: [[51, 37]],
+                     5: [[63, 37]],
+                     6: [[15, 63]],
+                     7: [[27, 63]],
+                     8: [[39, 63]],
+                     9: [[51, 63]],
                      10: [[63, 63]],
                      11: [[15, 70]],
                      12: [[27, 70]],
