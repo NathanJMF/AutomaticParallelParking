@@ -27,7 +27,7 @@ class ParkingLot:
         for ob in obstacles:
             self.background[ob[1]:ob[1] + 10, ob[0]:ob[0] + 10] = 0
 
-    def render_frame(self, car, x, y, angle):
+    def render_frame(self, car, x, y, angle, steer_angle):
         x = int(10 * x)
         y = int(10 * y)
 
@@ -38,10 +38,12 @@ class ParkingLot:
 
         agent_wheel_base = car.wheel_base
         agent_wheel = car.wheel_layout
-
         agent_wheel_base = self.rotate_contours(agent_wheel_base, self.ar([0.5, 0.5]), self.rad(angle))
         for count, wheel in enumerate(agent_wheel_base):
-            tire = self.rotate_contours(agent_wheel, self.ar([0.5, 0.5]), self.rad(angle))
+            if count <= 1:
+                tire = self.rotate_contours(agent_wheel, self.ar([0.5, 0.5]), self.rad(angle + steer_angle))
+            else:
+                tire = self.rotate_contours(agent_wheel, self.ar([0.5, 0.5]), self.rad(angle))
             tire = tire + np.array([x, y]) + wheel
             self.frame = cv2.fillPoly(self.frame, np.int32([tire]), car.wheel_colour)
         return self.frame

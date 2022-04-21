@@ -35,7 +35,7 @@ def main():
     wall = Walls()
     parkinglot = ParkingLot(cars, wall.get_walls())
     parkinglot.generate_obstacles()
-    r = parkinglot.render_frame(agent, x, y, angle)
+    r = parkinglot.render_frame(agent, x, y, angle, 45)
     cv2.imshow("test", r)
     cv2.waitKey(0)
 
