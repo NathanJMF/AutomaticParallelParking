@@ -41,8 +41,8 @@ def main():
 
     # Generate obstacle mask
     mask, minimum_x, maximum_x, minimum_y, maximum_y = parallel_park(parkinglot.obstacles)
-    end[0], end[1], parking_manoeuvre, a, b = manoeuvre(x, y, end[0], end[1], mask, minimum_x, maximum_x, minimum_y, maximum_y)
-
+    end[0], end[1], parking_manoeuvre, a, b = manoeuvre(x, y, end[0], end[1], mask, minimum_x, maximum_x, minimum_y,
+                                                        maximum_y)
 
 
 if __name__ == "__main__":

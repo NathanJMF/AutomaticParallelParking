@@ -20,15 +20,18 @@ def parallel_park(obstacles):
     obstacles_x = np.empty(0, dtype=int)
     obstacles_y = np.empty(0, dtype=int)
     obstacles = obstacles + np.array([margin, margin])
-    obstacles = obstacles[obstacles[:, 0] > -1 & obstacles[:, 1] > -1]
+    obstacles = obstacles[(obstacles[:, 0] >= 0) & (obstacles[:, 1] >= 0)]
+    # obstacles = obstacles[obstacles[:, 0] >= 0 & obstacles[:, 1] >= 0]
     obstacles = np.concatenate([np.array([[0, i] for i in range(100 + 2 * margin)]),
                                 np.array([[100 + 2 * margin - 1, i] for i in range(100 + 2 * margin)]),
                                 np.array([[i, 0] for i in range(100 + 2 * margin)]),
                                 np.array([[i, 100 + 2 * margin - 1] for i in range(100 + 2 * margin)]),
                                 obstacles + np.array([margin, margin])]) * 10
-    for item in obstacles:
-        obstacles_x = np.append(obstacles_x, item[:, 0])
-        obstacles_y = np.append(obstacles_y, item[:, 1])
+    # for item in obstacles:
+    #     obstacles_x = np.append(obstacles_x, item[:, 0])
+    #     obstacles_y = np.append(obstacles_y, item[:, 1])
+    obstacles_x = [int(item) for item in obstacles[:, 0]]
+    obstacles_y = [int(item) for item in obstacles[:, 1]]
     mask, minimum_x, maximum_x, minimum_y, maximum_y = obstacle_mask(obstacles_x, obstacles_y, 1, 4)
     return mask, minimum_x, maximum_x, minimum_y, maximum_y
 
@@ -63,8 +66,8 @@ def manoeuvre(x_start, y_start, x_end, y_end, mask, minimum_x, maximum_x, minimu
 def pathing_helper(x_start, y_start, x_end, y_end, mask, minimum_x, maximum_x, minimum_y, maximum_y):
     new_x = None
     new_y = None
-    start = node(calc_xy_index(x_start, minimum_x), calc_xy_index(y_start, minimum_y), 0.0, -1)
-    end = node(calc_xy_index(x_end, minimum_x), calc_xy_index(y_end, minimum_y), 0.0, -1)
+    start = node(str(calc_xy_index(x_start, minimum_x)), str(calc_xy_index(y_start, minimum_y)), str(0.0), str(-1))
+    end = node(str(calc_xy_index(x_end, minimum_x)), str(calc_xy_index(y_end, minimum_y)), str(0.0), str(-1))
     
     return new_x, new_y
 
@@ -80,10 +83,15 @@ def calc_xy_index(coord, min_coord):
 
 
 # Rename!
-def calc_heuristic():
-    
+def calc_grid_index(current, minimum_x, minimum_y, x):
+    current = (current.x - minimum_x) + (x * (current.y - minimum_y))
+    return current
 
 
-# Rename!
-def calc_grid_index():
-    
+def calc_heuristic(a, b):
+    opposite = a.x - b.x
+    adjacent = a.y - b.y
+    return math.hypot(opposite, adjacent)
+
+
+
