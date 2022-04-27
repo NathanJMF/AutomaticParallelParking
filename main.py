@@ -2,6 +2,7 @@ import numpy as np
 import cv2
 
 from environment import ParkingLot, Agent, Cars, Walls
+from pathing import parallel_park, manoeuvre
 
 
 def get_start_vars(lower, upper, prompt):
@@ -38,6 +39,9 @@ def main():
     cv2.waitKey(0)
     # Path planning
 
+    # Generate obstacle mask
+    mask, minimum_x, maximum_x, minimum_y, maximum_y = parallel_park(parkinglot.obstacles)
+    end[0], end[1], parking_manoeuvre, a, b = manoeuvre(x, y, end[0], end[1], mask, minimum_x, maximum_x, minimum_y, maximum_y)
 
 
 
