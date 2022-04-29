@@ -11,19 +11,27 @@ motion = [[1, 0, 1],
           [1, 1, math.sqrt(2)]]
 
 
-def pathing(obstacles):
-    pass
+def pathing(new_end, x_start, y_start, mask, minimum_x, maximum_x, minimum_y, maximum_y, width):
+    x_end = new_end[0]
+    y_end = new_end[1]
+    new_x, new_y = pathing_helper(x_start + 1, y_start + 1, x_end + 1, y_end + 1, mask, minimum_x, maximum_x, minimum_y,
+                                  maximum_y, width)
+    new_x = np.array(new_x) - 0.5
+    new_y = np.array(new_y) - 0.5
+    path = np.vstack([new_x, new_y]).T
+    # path = np.flip(np.vstack([new_x, new_y])).T
+    return path[::-1]
 
 
 def parallel_park(obstacles):
     margin = 1
     obstacles = obstacles + np.array([margin, margin])
     obstacles = obstacles[(obstacles[:, 0] >= 0) & (obstacles[:, 1] >= 0)]
-    obstacles = np.concatenate([np.array([[0, i] for i in range(100 + 2 * margin)]),
+    obstacles = np.concatenate([np.array([[0, i] for i in range(100 + margin)]),
                                 np.array([[100 + 2 * margin - 1, i] for i in range(100 + 2 * margin)]),
-                                np.array([[i, 0] for i in range(100 + 2 * margin)]),
-                                np.array([[i, 100 + 2 * margin - 1] for i in range(100 + 2 * margin)]),
-                                obstacles + np.array([margin, margin])]) * 10
+                                np.array([[i, 0] for i in range(100 + margin)]),
+                                np.array([[i, 100 + 2 * margin] for i in range(100 + 2 * margin)]),
+                                obstacles])
     # obstacles_x = np.empty(0, dtype=int)
     # obstacles_y = np.empty(0, dtype=int)
     # for item in obstacles:
@@ -57,24 +65,27 @@ def manoeuvre(x_start, y_start, x_end, y_end, mask, minimum_x, maximum_x, minimu
 
 
 def manoeuvre_back_right(x_end, y_end):
+    print("back right")
     ax = x_end + 6
     ay = y_end - 12
-    a_path = np.vstack([np.repeat(ax, 3/0.25), np.flip(np.arrange(ay - 3, ay, 0.25))]).T
-    b_path = np.vstack([np.repeat(x_end, 3/0.25), np.flip(np.arrange(y_end - 3, y_end, 0.25))]).T
+    a_path = np.vstack([np.repeat(ax, 3/0.25), np.flip(np.arange(ay - 3, ay, 0.25))]).T
+    b_path = np.vstack([np.repeat(x_end, 3/0.25), np.flip(np.arange(y_end - 3, y_end, 0.25))]).T
     parking_manoeuvre = park(x_end, y_end, 1)
     return parking_manoeuvre, a_path, b_path, ax, ay
 
 
 def manoeuvre_back_left(x_end, y_end):
+    print("back left")
     ax = x_end - 6
     ay = y_end - 12
     a_path = np.vstack([np.repeat(ax, 3/0.25), np.flip(np.arange(ay - 3, ay, 0.25))]).T
-    b_path = np.vstack([np.repeat(x_end, 3/0.25), np.flip(np.arrange(y_end - 3, y_end, 0.25))]).T
+    b_path = np.vstack([np.repeat(x_end, 3/0.25), np.flip(np.arange(y_end - 3, y_end, 0.25))]).T
     parking_manoeuvre = park(x_end, y_end, 2)
     return parking_manoeuvre, a_path, b_path, ax, ay
 
 
 def manoeuvre_forward_left(x_end, y_end):
+    print("forward left")
     ax = x_end - 6
     ay = y_end + 12
     a_path = np.vstack([np.repeat(ax, 3/0.25), np.arange(ay, ay + 3, 0.25)]).T
@@ -84,6 +95,7 @@ def manoeuvre_forward_left(x_end, y_end):
 
 
 def manoeuvre_forward_right(x_end, y_end):
+    print("forward right")
     ax = x_end + 6
     ay = y_end + 12
     a_path = np.vstack([np.repeat(ax, 3/0.25), np.arange(ay, ay + 3, 0.25)]).T
