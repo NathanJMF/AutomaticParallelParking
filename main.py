@@ -40,9 +40,9 @@ def main():
     # Path planning
 
     # Generate obstacle mask
-    mask, minimum_x, maximum_x, minimum_y, maximum_y = parallel_park(parkinglot.obstacles)
-    end[0], end[1], parking_manoeuvre, a, b = manoeuvre(x, y, end[0], end[1], mask, minimum_x, maximum_x, minimum_y,
-                                                        maximum_y)
+    mask, minimum_x, maximum_x, minimum_y, maximum_y, width = parallel_park(parkinglot.obstacles)
+    parking_manoeuvre, a_path, b_path, new_end = manoeuvre(x, y, end[0], end[1], mask, minimum_x, maximum_x, minimum_y,
+                                                           maximum_y, width)
 
 
 if __name__ == "__main__":

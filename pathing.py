@@ -19,7 +19,6 @@ def parallel_park(obstacles):
     margin = 1
     obstacles = obstacles + np.array([margin, margin])
     obstacles = obstacles[(obstacles[:, 0] >= 0) & (obstacles[:, 1] >= 0)]
-    # obstacles = obstacles[obstacles[:, 0] >= 0 & obstacles[:, 1] >= 0]
     obstacles = np.concatenate([np.array([[0, i] for i in range(100 + 2 * margin)]),
                                 np.array([[100 + 2 * margin - 1, i] for i in range(100 + 2 * margin)]),
                                 np.array([[i, 0] for i in range(100 + 2 * margin)]),
@@ -32,48 +31,156 @@ def parallel_park(obstacles):
     #     obstacles_y = np.append(obstacles_y, item[:, 1])
     obstacles_x = [int(item) for item in obstacles[:, 0]]
     obstacles_y = [int(item) for item in obstacles[:, 1]]
-    mask, minimum_x, maximum_x, minimum_y, maximum_y = obstacle_mask(obstacles_x, obstacles_y, 1, 4)
-    return mask, minimum_x, maximum_x, minimum_y, maximum_y
-
-
-# def grid_pos(index, resolution, pos):
-#     return index * resolution + pos
-
-
-def grid_pos(index, pos):
-    return index + pos
-
-
-def obstacle_mask(obstacles_x, obstacles_y, resolution, agent_radius):
-    minimum_x = round(min(obstacles_x))
-    maximum_x = round(max(obstacles_x))
-    minimum_y = round(min(obstacles_y))
-    maximum_y = round(max(obstacles_y))
-    x = round((maximum_x - minimum_x) / resolution)
-    y = round((maximum_y - minimum_y) / resolution)
-    mask = [[False for count in range(y)] for count in range(x)]
-    for temp_x in range(x):
-        xa = grid_pos(temp_x, round(min(obstacles_x)))
-        for temp_y in range(y):
-            ya = grid_pos(temp_y, round(min(obstacles_y)))
-            for xb, yb in zip(obstacles_x, obstacles_y):
-                if math.hypot(xb - x, yb - y) < agent_radius:
-                    mask[xa][ya] = True
-                    break
-    return mask, minimum_x, maximum_x, minimum_y, maximum_y
+    mask, minimum_x, maximum_x, minimum_y, maximum_y, width = obstacle_mask(obstacles_x, obstacles_y, 1, 4)
+    return mask, minimum_x, maximum_x, minimum_y, maximum_y, width
 
 
 def manoeuvre(x_start, y_start, x_end, y_end, mask, minimum_x, maximum_x, minimum_y, maximum_y, width):
     new_x, new_y = pathing_helper(x_start + 1, y_start + 1, x_end + 1, y_end + 1, mask, minimum_x, maximum_x, minimum_y,
                                   maximum_y, width)
+    new_x = np.array(new_x) - 0.5
+    new_y = np.array(new_y) - 0.5
+    parking_manoeuvre = np.vstack([new_x, new_y]).T
+    parking_manoeuvre = np.flip(parking_manoeuvre)
+    # parking_manoeuvre = parking_manoeuvre[::-1]
+    line_angle = calc_line_ang(parking_manoeuvre[-1][0], parking_manoeuvre[-1][1], parking_manoeuvre[-1][0],
+                               parking_manoeuvre[-1][1])
+    if -math.atan2(0, -1) < line_angle <= math.atan2(-1, 0):
+        parking_manoeuvre, a_path, b_path, ax, ay = manoeuvre_back_right(x_end, y_end)
+    elif math.atan2(-1, 0) <= line_angle <= math.atan2(0, 1):
+        parking_manoeuvre, a_path, b_path, ax, ay = manoeuvre_back_left(x_end, y_end)
+    elif math.atan2(0, 1) < line_angle <= math.atan2(1, 0):
+        parking_manoeuvre, a_path, b_path, ax, ay = manoeuvre_forward_left(x_end, y_end)
+    else:
+        parking_manoeuvre, a_path, b_path, ax, ay = manoeuvre_forward_right(x_end, y_end)
+    return parking_manoeuvre, a_path, b_path, np.array([ax, ay])
+
+
+def manoeuvre_back_right(x_end, y_end):
+    ax = x_end + 6
+    ay = y_end - 12
+    a_path = np.vstack([np.repeat(ax, 3/0.25), np.flip(np.arrange(ay - 3, ay, 0.25))]).T
+    b_path = np.vstack([np.repeat(x_end, 3/0.25), np.flip(np.arrange(y_end - 3, y_end, 0.25))]).T
+    parking_manoeuvre = park(x_end, y_end, 1)
+    return parking_manoeuvre, a_path, b_path, ax, ay
+
+
+def manoeuvre_back_left(x_end, y_end):
+    ax = x_end - 6
+    ay = y_end - 12
+    a_path = np.vstack([np.repeat(ax, 3/0.25), np.flip(np.arange(ay - 3, ay, 0.25))]).T
+    b_path = np.vstack([np.repeat(x_end, 3/0.25), np.flip(np.arrange(y_end - 3, y_end, 0.25))]).T
+    parking_manoeuvre = park(x_end, y_end, 2)
+    return parking_manoeuvre, a_path, b_path, ax, ay
+
+
+def manoeuvre_forward_left(x_end, y_end):
+    ax = x_end - 6
+    ay = y_end + 12
+    a_path = np.vstack([np.repeat(ax, 3/0.25), np.arange(ay, ay + 3, 0.25)]).T
+    b_path = np.vstack([np.repeat(x_end, 3/0.25), np.arange(y_end - 3, y_end, 0.25)]).T
+    parking_manoeuvre = park(x_end, y_end, 3)
+    return parking_manoeuvre, a_path, b_path, ax, ay
+
+
+def manoeuvre_forward_right(x_end, y_end):
+    ax = x_end + 6
+    ay = y_end + 12
+    a_path = np.vstack([np.repeat(ax, 3/0.25), np.arange(ay, ay + 3, 0.25)]).T
+    b_path = np.vstack([np.repeat(x_end, 3/0.25), np.arange(y_end - 3, y_end, 0.25)]).T
+    parking_manoeuvre = park(x_end, y_end, 4)
+    return parking_manoeuvre, a_path, b_path, ax, ay
+
+
+def park(x_end, y_end, option):
+    x_function = np.array([])
+    y_function = np.array([])
+    if option == 1:
+        ax = x_end + 6
+        ay = y_end - 12
+        y_temp = np.arange(ay, y_end + 1)
+        circle = (6.9 ** 2 - (y_temp - ay) ** 2)
+        x_temp = (np.sqrt(circle[circle >= 0]) + ax - 6.9)
+    elif option == 2:
+        ax = x_end - 6
+        ay = y_end - 12
+        y_temp = np.arange(ay, y_end + 1)
+        circle = (6.9 ** 2 - (y_temp - ay) ** 2)
+        x_temp = (np.sqrt(circle[circle >= 0]) + ax + 6.9)
+    elif option == 3:
+        ax = x_end + 6
+        ay = y_end + 12
+        y_temp = np.arange(y_end, ay + 1)
+        circle = (6.9 ** 2 - (y_temp - ay) ** 2)
+        x_temp = (np.sqrt(circle[circle >= 0]) + ax + 6.9)
+    else:
+        ax = x_end - 6
+        ay = y_end + 12
+        y_temp = np.arange(y_end, ay + 1)
+        circle = (6.9 ** 2 - (y_temp - ay) ** 2)
+        x_temp = (np.sqrt(circle[circle >= 0]) + ax - 6.9)
+
+    y_temp = y_temp[circle >= 0]
+
+    if option == 1:
+        choice = x_temp > ax - 6.9 / 2
+        x_temp = x_temp[choice]
+        y_temp = y_temp[choice]
+        x_function = np.append(x_function, x_temp)
+        y_function = np.append(y_function, y_temp)
+        y_temp = np.arange(ay, y_end + 1)
+    elif option == 2:
+        x_temp = (x_temp - 2 * (x_temp - (ax + 6.9)))
+        choice = x_temp < ax + 6.9 / 2
+        x_temp = x_temp[choice]
+        y_temp = y_temp[choice]
+        x_function = np.append(x_function, x_temp)
+        y_function = np.append(y_function, y_temp)
+        y_temp = np.arange(ay, y_end + 1)
+    elif option == 3:
+        x_temp = (x_temp - 2 * (x_temp - (ax + 6.9)))
+        choice = x_temp < ax + 6.9 / 2
+        x_temp = x_temp[choice]
+        y_temp = y_temp[choice]
+        x_function = np.append(x_function, x_temp[::-1])
+        y_function = np.append(y_function, y_temp[::-1])
+        y_temp = np.arange(y_end, ay + 1)
+    else:
+        choice = x_temp > ax - 6.9 / 2
+        x_temp = x_temp[choice]
+        y_temp = y_temp[choice]
+        x_function = np.append(x_function, x_temp[::-1])
+        y_function = np.append(y_function, y_temp[::-1])
+        y_temp = np.arange(y_end, ay + 1)
+
+    circle = (6.9 ** 2 - (y_temp - y_end) ** 2)
+
+    if option == 1 or option == 4:
+        x_temp = (np.sqrt(circle[circle >= 0]) + x_end + 6.9)
+        x_temp = (x_temp - 2 * (x_temp - (x_end + 6.9)))
+        y_temp = y_temp[circle >= 0]
+        choice = x_temp < x_end + 6.9 / 2
+    else:
+        x_temp = (np.sqrt(circle[circle >= 0]) + x_end - 6.9)
+        y_temp = y_temp[circle >= 0]
+        choice = x_temp > x_end - 6.9 / 2
+
+    x_temp = x_temp[choice]
+    y_temp = y_temp[choice]
+
+    if option == 1 or option == 2:
+        x_function = np.append(x_function, x_temp)
+        y_function = np.append(y_function, y_temp)
+    else:
+        x_function = np.append(x_function, x_temp[::-1])
+        y_function = np.append(y_function, y_temp[::-1])
+    parking_manoeuvre = np.vstack([x_function, y_function]).T
+    return parking_manoeuvre
 
 
 def pathing_helper(x_start, y_start, x_end, y_end, mask, minimum_x, maximum_x, minimum_y, maximum_y, width):
-    # route_x = None
-    # route_y = None
     start_set = dict()
     end_set = dict()
-    # width = round((maximum_x - minimum_x) / 1)
     start = node(calc_xy_index(x_start, minimum_x), calc_xy_index(y_start, minimum_y), 0.0, -1)
     end = node(calc_xy_index(x_end, minimum_x), calc_xy_index(y_end, minimum_y), 0.0, -1)
     start_set[calc_grid_index(start, minimum_x, minimum_y, width)] = start
@@ -90,7 +197,8 @@ def pathing_helper(x_start, y_start, x_end, y_end, mask, minimum_x, maximum_x, m
         del start_set[current_id]
         end_set[current_id] = current_node
         for count in range(len(motion)):
-            item = node(current_node["x"] + motion[count][0], current_node["y"] + motion[count][1], current_node["cost"] + motion[count][2], current_id)
+            item = node(current_node["x"] + motion[count][0], current_node["y"] + motion[count][1],
+                        current_node["cost"] + motion[count][2], current_id)
             node_id = calc_grid_index(item, minimum_x, minimum_y, width)
             if not verify_node(minimum_x, minimum_y, maximum_x, maximum_y, item, mask):
                 continue
@@ -104,6 +212,35 @@ def pathing_helper(x_start, y_start, x_end, y_end, mask, minimum_x, maximum_x, m
                 continue
     route_x, route_y = calc_final_path(end, end_set, minimum_x, minimum_y)
     return route_x, route_y
+
+
+def grid_pos(index, pos):
+    return index + pos
+#     return index * resolution + pos
+
+
+def obstacle_mask(obstacles_x, obstacles_y, resolution, agent_radius):
+    minimum_x = round(min(obstacles_x))
+    maximum_x = round(max(obstacles_x))
+    minimum_y = round(min(obstacles_y))
+    maximum_y = round(max(obstacles_y))
+    mask = []
+    x = round((maximum_x - minimum_x) / resolution)
+    y = round((maximum_y - minimum_y) / resolution)
+    for count in range(x):
+        mask.append([])
+        for count2 in range(y):
+            mask[count].append(False)
+    # mask = [[False for count in range(y)] for count in range(x)]
+    for temp_x in range(x):
+        xa = grid_pos(temp_x, minimum_x)
+        for temp_y in range(y):
+            ya = grid_pos(temp_y, round(min(obstacles_y)))
+            for xb, yb in zip(obstacles_x, obstacles_y):
+                if math.hypot(xb - xa, yb - ya) < agent_radius:
+                    mask[temp_x][temp_y] = True
+                    break
+    return mask, minimum_x, maximum_x, minimum_y, maximum_y, x
 
 
 # Rename!
@@ -151,3 +288,8 @@ def calc_final_path(end, closed, minimum_x, minimum_y):
         final_y.append(grid_pos(temp["y"], minimum_y))
         index = temp["index"]
     return final_x, final_y
+
+
+def calc_line_ang(ax, ay, bx, by):
+    angle = math.atan2(by - ay, bx - ax)
+    return angle
