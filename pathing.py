@@ -44,16 +44,21 @@ def parallel_park(obstacles):
     return mask, minimum_x, maximum_x, minimum_y, maximum_y, width
 
 
-def manoeuvre(x_start, y_start, x_end, y_end, mask, minimum_x, maximum_x, minimum_y, maximum_y, width):
-    new_x, new_y = pathing_helper(x_start + 1, y_start + 1, x_end + 1, y_end + 1, mask, minimum_x, maximum_x, minimum_y,
+def manoeuvre(x_start, y_start, x_end, y_end, mask, minimum_x, maximum_x, minimum_y, maximum_y, width, parking_spot):
+    new_x, new_y = pathing_helper(x_start + 5, y_start + 5, x_end + 5, y_end + 5, mask, minimum_x, maximum_x, minimum_y,
                                   maximum_y, width)
-    new_x = np.array(new_x) - 0.5
-    new_y = np.array(new_y) - 0.5
+    new_x = np.array(new_x) + 4.5
+    new_y = np.array(new_y) + 4.5
     parking_manoeuvre = np.vstack([new_x, new_y]).T
     parking_manoeuvre = np.flip(parking_manoeuvre)
     # parking_manoeuvre = parking_manoeuvre[::-1]
-    line_angle = calc_line_ang(parking_manoeuvre[-1][0], parking_manoeuvre[-1][1], parking_manoeuvre[-1][0],
-                               parking_manoeuvre[-1][1])
+
+    if 1 <= parking_spot <= 5 or 11 <= parking_spot <= 15:
+        line_angle = calc_line_ang(parking_manoeuvre[-5][0], parking_manoeuvre[-5][1], parking_manoeuvre[-1][0],
+                                   parking_manoeuvre[-1][1])
+    else:
+        line_angle = calc_line_ang(parking_manoeuvre[-1][0], parking_manoeuvre[-1][1], parking_manoeuvre[-1][0],
+                                   parking_manoeuvre[-1][1])
     if -math.atan2(0, -1) < line_angle <= math.atan2(-1, 0):
         parking_manoeuvre, a_path, b_path, ax, ay = manoeuvre_back_right(x_end, y_end)
     elif math.atan2(-1, 0) <= line_angle <= math.atan2(0, 1):
@@ -121,13 +126,13 @@ def park(x_end, y_end, option):
         circle = (6.9 ** 2 - (y_temp - ay) ** 2)
         x_temp = (np.sqrt(circle[circle >= 0]) + ax + 6.9)
     elif option == 3:
-        ax = x_end + 6
+        ax = x_end - 6
         ay = y_end + 12
         y_temp = np.arange(y_end, ay + 1)
         circle = (6.9 ** 2 - (y_temp - ay) ** 2)
         x_temp = (np.sqrt(circle[circle >= 0]) + ax + 6.9)
     else:
-        ax = x_end - 6
+        ax = x_end + 6
         ay = y_end + 12
         y_temp = np.arange(y_end, ay + 1)
         circle = (6.9 ** 2 - (y_temp - ay) ** 2)
