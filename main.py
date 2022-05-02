@@ -41,11 +41,14 @@ def main():
 
     # Generate obstacle mask
     mask, minimum_x, maximum_x, minimum_y, maximum_y, width = parallel_park(parkinglot.obstacles)
+
     parking_manoeuvre, a_path, b_path, new_end = manoeuvre(x, y, end[0], end[1], mask, minimum_x, maximum_x, minimum_y,
                                                            maximum_y, width)
+
     mask, minimum_x, maximum_x, minimum_y, maximum_y, width = parallel_park(parkinglot.obstacles)
+
     path = pathing(new_end, x, y, mask, minimum_x, maximum_x, minimum_y, maximum_y, width)
-    path = np.vstack([path, a_path])
+    path = np.vstack([path, a_path, b_path])
     parkinglot.path(path)
     parkinglot.path(parking_manoeuvre)
     r = parkinglot.render_frame(agent, x, y, angle, 45)
