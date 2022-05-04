@@ -46,7 +46,7 @@ class ParkingLot:
                 tire = self.rotate_contours(agent_wheel, self.ar([0.5, 0.5]), self.rad(angle))
             tire = tire + np.array([x, y]) + wheel
             self.frame = cv2.fillPoly(self.frame, np.int32([tire]), car.wheel_colour)
-        self.frame = cv2.resize(np.flip(self.frame, axis=0), (700, 700))
+        # self.frame = cv2.resize(np.flip(self.frame, axis=0), (700, 700))
         return self.frame
 
     def path(self, path):

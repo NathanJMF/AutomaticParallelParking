@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 
 from environment import ParkingLot, Agent, Cars, Walls
-from pathing import parallel_park, manoeuvre, pathing
+from pathing import parallel_park, manoeuvre, pathing, path_interpolation
 
 
 def get_start_vars(lower, upper, prompt):
@@ -48,9 +48,14 @@ def main():
     mask, minimum_x, maximum_x, minimum_y, maximum_y, width = parallel_park(parkinglot.obstacles)
 
     path = pathing(new_end, x, y, mask, minimum_x, maximum_x, minimum_y, maximum_y, width)
-    path = np.vstack([path, a_path, b_path])
-    parkinglot.path(path)
-    parkinglot.path(parking_manoeuvre)
+    path = np.vstack([path, a_path])
+
+    interpolated_pathing = path_interpolation(path, 5)
+    interpolated_parking = path_interpolation(parking_manoeuvre, 1)
+    interpolated_parking = np.vstack([a_path, interpolated_parking, b_path])
+
+    parkinglot.path(interpolated_pathing)
+    parkinglot.path(interpolated_parking)
     r = parkinglot.render_frame(agent, x, y, angle, 45)
     cv2.imshow("test", r)
     cv2.waitKey(0)

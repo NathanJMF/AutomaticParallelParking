@@ -1,5 +1,6 @@
 import numpy as np
 import math
+import scipy.interpolate
 
 motion = [[1, 0, 1],
           [0, 1, 1],
@@ -36,8 +37,8 @@ def parallel_park(obstacles):
     # obstacles_x = np.empty(0, dtype=int)
     # obstacles_y = np.empty(0, dtype=int)
     # for item in obstacles:
-    #     obstacles_x = np.append(obstacles_x, item[:, 0])
-    #     obstacles_y = np.append(obstacles_y, item[:, 1])
+    #     obstacles_x = np.append(obstacles_x, int(item[0]))
+    #     obstacles_y = np.append(obstacles_y, int(item[1]))
     obstacles_x = [int(item) for item in objects[:, 0]]
     obstacles_y = [int(item) for item in objects[:, 1]]
     mask, minimum_x, maximum_x, minimum_y, maximum_y, width = obstacle_mask(obstacles_x, obstacles_y, 1, 4)
@@ -47,8 +48,8 @@ def parallel_park(obstacles):
 def manoeuvre(x_start, y_start, x_end, y_end, mask, minimum_x, maximum_x, minimum_y, maximum_y, width, parking_spot):
     new_x, new_y = pathing_helper(x_start + 5, y_start + 5, x_end + 5, y_end + 5, mask, minimum_x, maximum_x, minimum_y,
                                   maximum_y, width)
-    new_x = np.array(new_x) + 4.5
-    new_y = np.array(new_y) + 4.5
+    new_x = np.array(new_x) - 0.5
+    new_y = np.array(new_y) - 0.5
     parking_manoeuvre = np.vstack([new_x, new_y]).T
     parking_manoeuvre = np.flip(parking_manoeuvre)
     # parking_manoeuvre = parking_manoeuvre[::-1]
@@ -315,3 +316,19 @@ def calc_final_path(end, closed, minimum_x, minimum_y):
 def calc_line_ang(ax, ay, bx, by):
     angle = math.atan2(by - ay, bx - ax)
     return angle
+
+
+def path_interpolation(path, rate):
+    path_length = len(path)
+    current = np.arange(0, path_length, rate)
+    if path_length - 1 not in current:
+        current = np.append(current, path_length - 1)
+    x = path[current, 0]
+    y = path[current, 1]
+
+    interpolated_x = scipy.interpolate.make_interp_spline(np.linspace(0.0, len(x) - 1, len(x)), x, k=3)
+    interpolated_y = scipy.interpolate.make_interp_spline(np.linspace(0.0, len(x) - 1, len(x)), y, k=3)
+    # travel = np.linspace(0.0, len(x) - 1, len(path) * 3)
+    final_x = interpolated_x(np.linspace(0.0, len(x) - 1, len(path) * 3))
+    final_y = interpolated_y(np.linspace(0.0, len(x) - 1, len(path) * 3))
+    return np.vstack([final_x, final_y]).T
