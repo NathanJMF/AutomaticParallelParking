@@ -45,7 +45,7 @@ def main():
     path = pathing(new_end, x, y, mask, minimum_x, maximum_x, minimum_y, maximum_y, width)
     # path = np.vstack([path, a_path])
 
-    interpolated_pathing = path_interpolation(path, 5)
+    interpolated_pathing = path_interpolation(path, 10)
     interpolated_parking = path_interpolation(parking_manoeuvre, 1)
     interpolated_parking = np.vstack([a_path, interpolated_parking, b_path])
 
@@ -62,11 +62,14 @@ def main():
     for count, coordinate in enumerate(agent_path):
         vel, steer_angle = agent_controller.optimisation(agent_car, agent_path[count:count+5])
         agent_car.update_agent(agent_car.drive(vel, steer_angle))
-        r = parkinglot.render_frame(agent, agent_car.x, agent_car.y, np.rad2deg(agent_car.angle), np.rad2deg(steer_angle))
+        agent_car.x = agent_car.x + 1
+        agent_car.y = agent_car.y + 1
+        r = parkinglot.render_frame(agent, agent_car.x, agent_car.y, np.rad2deg(agent_car.angle),
+                                    np.rad2deg(steer_angle))
         cv2.imshow("test", r)
         cv2.waitKey(1)
 
-    r = parkinglot.render_frame(agent, agent_car.x, agent_car.y, np.rad2deg(agent_car.angle), 0)
+    r = parkinglot.render_frame(agent, agent_car.x, agent_car.y, 90, 0)
     cv2.imshow("test", r)
     cv2.waitKey(0)
 
