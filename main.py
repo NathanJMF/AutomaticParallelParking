@@ -25,18 +25,18 @@ def get_start_vars(lower, upper, prompt):
 
 def main():
     print("Start!")
-    x = get_start_vars(0, 100, "Starting X co-ordinate:\nPlease enter a number from 0 and 100\n")
-    y = get_start_vars(0, 100, "Starting Y co-ordinate:\nPlease enter a number from 0 and 100\n")
-    angle = get_start_vars(0, 360, "Starting angle:\nPlease enter a number from 0 to 360\n")
+    x = get_start_vars(5, 30, "Starting X co-ordinate:\nPlease enter a number from 5 to 30\n")
+    y = get_start_vars(5, 30, "Starting Y co-ordinate:\nPlease enter a number from 5 to 30\n")
     parking_spot = get_start_vars(1, 20, "Desired parking spot:\nPlease enter a number from 1 to 20\n")
 
+    angle = 90
     agent = Agent()
     car = Cars()
     end, cars = car.generate_cars(parking_spot)
     wall = Walls()
     parkinglot = ParkingLot(cars, wall.get_walls())
     parkinglot.generate_obstacles()
-    r = parkinglot.render_frame(agent, x, y, angle, 0)
+    # r = parkinglot.render_frame(agent, x, y, angle, 0)
 
     mask, minimum_x, maximum_x, minimum_y, maximum_y, width = parallel_park(parkinglot.obstacles)
     parking_manoeuvre, a_path, b_path, new_end = manoeuvre(x, y, end[0], end[1], mask, minimum_x, maximum_x, minimum_y,
