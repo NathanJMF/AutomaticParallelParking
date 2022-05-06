@@ -51,11 +51,12 @@ class ParkingLot:
 
     def path(self, path):
         path = np.array(path) * 10
-        color = np.random.randint(0, 150, 3) / 255
+        # color = np.random.randint(0, 150, 3) / 255
+        colour = np.array([0, 0, 255]) / 255
         path = path.astype(int)
         for p in path:
             self.background[p[1] + 10 * self.margin:p[1] + 10 * self.margin + 3,
-            p[0] + 10 * self.margin:p[0] + 10 * self.margin + 3] = color
+            p[0] + 10 * self.margin:p[0] + 10 * self.margin + 3] = colour
 
     def rotate_contours(self, pts, cnt, ang):
         return self.dot(pts - cnt, self.ar([[self.cos(ang), self.sin(ang)], [-self.sin(ang), self.cos(ang)]])) + cnt

@@ -1,4 +1,3 @@
-import numpy
 import numpy as np
 
 
@@ -22,4 +21,3 @@ class AgentMovement:
     def drive(self, velocity, angle_diff):
         return np.array([[self.velocity*np.cos(self.angle), self.velocity*np.sin(self.angle), velocity,
                           self.velocity*np.tan(angle_diff)/self.agent_length]]).T
-    
