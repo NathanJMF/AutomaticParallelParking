@@ -76,7 +76,7 @@ def manoeuvre_back_right(x_end, y_end):
     ax = x_end + 6
     ay = y_end - 12
     a_path = np.vstack([np.repeat(ax, 3 / 0.25), np.flip(np.arange(ay - 3, ay, 0.25))]).T
-    b_path = np.vstack([np.repeat(x_end, 3 / 0.25), np.flip(np.arange(y_end - 3, y_end, 0.25))]).T
+    b_path = np.vstack([np.repeat(x_end, 3 / 0.25), np.flip(np.arange(y_end, y_end + 3, 0.25))]).T
     parking_manoeuvre = park(x_end, y_end, 1)
     return parking_manoeuvre, a_path, b_path, ax, ay
 
@@ -86,7 +86,7 @@ def manoeuvre_back_left(x_end, y_end):
     ax = x_end - 6
     ay = y_end - 12
     a_path = np.vstack([np.repeat(ax, 3 / 0.25), np.flip(np.arange(ay - 3, ay, 0.25))]).T
-    b_path = np.vstack([np.repeat(x_end, 3 / 0.25), np.flip(np.arange(y_end - 3, y_end, 0.25))]).T
+    b_path = np.vstack([np.repeat(x_end, 3 / 0.25), np.flip(np.arange(y_end, y_end + 3, 0.25))]).T
     parking_manoeuvre = park(x_end, y_end, 2)
     return parking_manoeuvre, a_path, b_path, ax, ay
 

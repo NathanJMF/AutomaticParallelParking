@@ -43,7 +43,7 @@ def main():
                                                            maximum_y, width, parking_spot)
     mask, minimum_x, maximum_x, minimum_y, maximum_y, width = parallel_park(parkinglot.obstacles)
     path = pathing(new_end, x, y, mask, minimum_x, maximum_x, minimum_y, maximum_y, width)
-    path = np.vstack([path, a_path])
+    # path = np.vstack([path, a_path])
 
     interpolated_pathing = path_interpolation(path, 5)
     interpolated_parking = path_interpolation(parking_manoeuvre, 1)
@@ -55,7 +55,7 @@ def main():
     cv2.imshow("test", r)
     cv2.waitKey(1)
 
-    agent_path = np.vstack([interpolated_pathing, interpolated_parking, b_path])
+    agent_path = np.vstack([interpolated_pathing, interpolated_parking])
     agent_car = AgentMovement(x, y, 0, np.deg2rad(angle))
     agent_controller = MPC()
 
