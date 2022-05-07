@@ -205,7 +205,6 @@ def pathing_helper(x_start, y_start, x_end, y_end, mask, minimum_x, maximum_x, m
     start_set[calc_grid_index(start, minimum_x, minimum_y, width)] = start
     while True:
         if not bool(start_set):
-            print("Empty starting set")
             break
         current_id = min(start_set, key=lambda o: start_set[o]["cost"] + calc_heuristic(end, start_set[o]))
         current_node = start_set[current_id]

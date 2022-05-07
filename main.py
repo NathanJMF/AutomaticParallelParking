@@ -23,12 +23,13 @@ def get_start_vars(lower, upper, prompt):
     return value
 
 
-def main():
-    print("Start!")
-    x = get_start_vars(5, 30, "Starting X co-ordinate:\nPlease enter a number from 5 to 30\n")
-    y = get_start_vars(5, 30, "Starting Y co-ordinate:\nPlease enter a number from 5 to 30\n")
-    parking_spot = get_start_vars(1, 20, "Desired parking spot:\nPlease enter a number from 1 to 20\n")
-
+def main(parking_spot):
+    # x = get_start_vars(5, 30, "Starting X co-ordinate:\nPlease enter a number from 5 to 30\n")
+    # y = get_start_vars(5, 30, "Starting Y co-ordinate:\nPlease enter a number from 5 to 30\n")
+    # parking_spot = get_start_vars(1, 20, "Desired parking spot:\nPlease enter a number from 1 to 20\n")
+    x = 15
+    y = 15
+    parking_spot = parking_spot
     angle = 90
     agent = Agent()
     car = Cars()
@@ -49,6 +50,13 @@ def main():
     interpolated_parking = path_interpolation(parking_manoeuvre, 1)
     interpolated_parking = np.vstack([a_path, interpolated_parking, b_path])
 
+    if 5 < parking_spot < 9 or 15 < parking_spot < 19:
+        last_element = len(interpolated_pathing) - 10
+        interpolated_pathing = interpolated_pathing[:last_element]
+    if parking_spot in [9, 10, 19, 20]:
+        last_element = len(interpolated_pathing) - 20
+        interpolated_pathing = interpolated_pathing[:last_element]
+        
     parkinglot.path(interpolated_pathing)
     parkinglot.path(interpolated_parking)
     r = parkinglot.render_frame(agent, x, y, angle, 0)
@@ -71,8 +79,14 @@ def main():
 
     r = parkinglot.render_frame(agent, agent_car.x, agent_car.y, 90, 0)
     cv2.imshow("test", r)
-    cv2.waitKey(0)
+    cv2.waitKey(1)
+
+
+def tester():
+    for count in range(1, 11):
+        print("Parking spot", count, "!\n")
+        main(count)
 
 
 if __name__ == "__main__":
-    main()
+    tester()
