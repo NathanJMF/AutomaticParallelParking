@@ -1,3 +1,5 @@
+from typing import Tuple, List, Any
+
 import numpy as np
 import math
 import scipy.interpolate
@@ -19,12 +21,13 @@ def pathing(new_end, x_start, y_start, mask, minimum_x, maximum_x, minimum_y, ma
                                   maximum_y, width)
     new_x = np.array(new_x) - 0.5
     new_y = np.array(new_y) - 0.5
-    path = np.vstack([new_x, new_y]).T
-    # path = np.flip(np.vstack([new_x, new_y])).T
-    return path[::-1]
+    path = np.vstack([new_x, new_y]).T[::-1]
+    return path
 
 
 def parallel_park(obstacles):
+    obstacles_x = []
+    obstacles_y = []
     margin = 1
     obstacles = obstacles + np.array([margin, margin])
     obstacles = obstacles[(obstacles[:, 0] >= 0) & (obstacles[:, 1] >= 0)]
@@ -34,13 +37,11 @@ def parallel_park(obstacles):
                               np.array([[i, 0] for i in range(100 + margin)]),
                               np.array([[i, 100 + 2 * margin] for i in range(100 + 2 * margin)]),
                               obstacles])
-    # obstacles_x = np.empty(0, dtype=int)
-    # obstacles_y = np.empty(0, dtype=int)
-    # for item in obstacles:
-    #     obstacles_x = np.append(obstacles_x, int(item[0]))
-    #     obstacles_y = np.append(obstacles_y, int(item[1]))
-    obstacles_x = [int(item) for item in objects[:, 0]]
-    obstacles_y = [int(item) for item in objects[:, 1]]
+    for item in objects[:, 0]:
+        obstacles_x.append(int(item))
+    for item in objects[:, 1]:
+        obstacles_y.append(int(item))
+
     mask, minimum_x, maximum_x, minimum_y, maximum_y, width = obstacle_mask(obstacles_x, obstacles_y, 1, 4)
     return mask, minimum_x, maximum_x, minimum_y, maximum_y, width
 
@@ -52,7 +53,6 @@ def manoeuvre(x_start, y_start, x_end, y_end, mask, minimum_x, maximum_x, minimu
     new_y = np.array(new_y) - 0.5
     parking_manoeuvre = np.vstack([new_x, new_y]).T
     parking_manoeuvre = np.flip(parking_manoeuvre)
-    # parking_manoeuvre = parking_manoeuvre[::-1]
 
     if 1 <= parking_spot <= 5 or 11 <= parking_spot <= 15:
         line_angle = calc_line_ang(parking_manoeuvre[-5][0], parking_manoeuvre[-5][1], parking_manoeuvre[-1][0],
@@ -161,15 +161,15 @@ def park(x_end, y_end, option):
         choice = x_temp < ax + 6.9 / 2
         x_temp = x_temp[choice]
         y_temp = y_temp[choice]
-        x_function = np.append(x_function, x_temp[::-1])
-        y_function = np.append(y_function, y_temp[::-1])
+        x_function = np.append(x_function, np.flip(x_temp))
+        y_function = np.append(y_function, np.flip(y_temp))
         y_temp = np.arange(y_end, ay + 1)
     else:
         choice = x_temp > ax - 6.9 / 2
         x_temp = x_temp[choice]
         y_temp = y_temp[choice]
-        x_function = np.append(x_function, x_temp[::-1])
-        y_function = np.append(y_function, y_temp[::-1])
+        x_function = np.append(x_function, np.flip(x_temp))
+        y_function = np.append(y_function, np.flip(y_temp))
         y_temp = np.arange(y_end, ay + 1)
 
     circle = (6.9 ** 2 - (y_temp - y_end) ** 2)
@@ -191,8 +191,8 @@ def park(x_end, y_end, option):
         x_function = np.append(x_function, x_temp)
         y_function = np.append(y_function, y_temp)
     else:
-        x_function = np.append(x_function, x_temp[::-1])
-        y_function = np.append(y_function, y_temp[::-1])
+        x_function = np.append(x_function, np.flip(x_temp))
+        y_function = np.append(y_function, np.flip(y_temp))
     parking_manoeuvre = np.vstack([x_function, y_function]).T
     return parking_manoeuvre
 
@@ -236,10 +236,15 @@ def grid_pos(index, pos):
     return index + pos
 
 
-#     return index * resolution + pos
-
-
 def obstacle_mask(obstacles_x, obstacles_y, resolution, agent_radius):
+    """
+
+    :param obstacles_x:
+    :param obstacles_y:
+    :param resolution:
+    :param agent_radius:
+    :return:
+    """
     minimum_x = round(min(obstacles_x))
     maximum_x = round(max(obstacles_x))
     minimum_y = round(min(obstacles_y))
