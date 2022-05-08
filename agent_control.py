@@ -30,6 +30,6 @@ class MPC:
     def optimisation(self, agent, path):
         self.horizon = path.shape[0]
         agent_state = scipy.optimize.minimize(self.controller, args=(agent, path), x0=np.zeros(2 * self.horizon),
-                                              method='SLSQP',
+                                              method="SLSQP",
                                               bounds=[(-5, 5), (np.deg2rad(-60), np.deg2rad(60))] * self.horizon)
         return agent_state.x[0], agent_state.x[1]

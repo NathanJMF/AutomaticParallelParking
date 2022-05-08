@@ -1,5 +1,3 @@
-from typing import Tuple, List, Any
-
 import numpy as np
 import math
 import scipy.interpolate
@@ -55,24 +53,24 @@ def manoeuvre(x_start, y_start, x_end, y_end, mask, minimum_x, maximum_x, minimu
     parking_manoeuvre = np.flip(parking_manoeuvre)
 
     if 1 <= parking_spot <= 5 or 11 <= parking_spot <= 15:
-        line_angle = calc_line_ang(parking_manoeuvre[-5][0], parking_manoeuvre[-5][1], parking_manoeuvre[-1][0],
-                                   parking_manoeuvre[-1][1])
+        line_angle = angle_calc(parking_manoeuvre[-5][0], parking_manoeuvre[-5][1], parking_manoeuvre[-1][0],
+                                parking_manoeuvre[-1][1])
     else:
-        line_angle = calc_line_ang(parking_manoeuvre[-1][0], parking_manoeuvre[-1][1], parking_manoeuvre[-1][0],
-                                   parking_manoeuvre[-1][1])
+        line_angle = angle_calc(parking_manoeuvre[-1][0], parking_manoeuvre[-1][1], parking_manoeuvre[-1][0],
+                                parking_manoeuvre[-1][1])
+
     if -math.atan2(0, -1) < line_angle <= math.atan2(-1, 0):
-        parking_manoeuvre, a_path, b_path, ax, ay = manoeuvre_back_right(x_end, y_end)
+        parking_manoeuvre, a_path, b_path, ax, ay = manoeuvre_left(x_end, y_end)
     elif math.atan2(-1, 0) <= line_angle <= math.atan2(0, 1):
-        parking_manoeuvre, a_path, b_path, ax, ay = manoeuvre_back_left(x_end, y_end)
+        parking_manoeuvre, a_path, b_path, ax, ay = manoeuvre_right(x_end, y_end)
     elif math.atan2(0, 1) < line_angle <= math.atan2(1, 0):
-        parking_manoeuvre, a_path, b_path, ax, ay = manoeuvre_forward_left(x_end, y_end)
+        parking_manoeuvre, a_path, b_path, ax, ay = manoeuvre_right(x_end, y_end)
     else:
-        parking_manoeuvre, a_path, b_path, ax, ay = manoeuvre_forward_right(x_end, y_end)
+        parking_manoeuvre, a_path, b_path, ax, ay = manoeuvre_left(x_end, y_end)
     return parking_manoeuvre, a_path, b_path, np.array([ax, ay])
 
 
-def manoeuvre_back_right(x_end, y_end):
-    print("back right")
+def manoeuvre_left(x_end, y_end):
     ax = x_end + 6
     ay = y_end - 12
     a_path = np.vstack([np.repeat(ax, 3 / 0.25), np.flip(np.arange(ay - 3, ay, 0.25))]).T
@@ -81,33 +79,12 @@ def manoeuvre_back_right(x_end, y_end):
     return parking_manoeuvre, a_path, b_path, ax, ay
 
 
-def manoeuvre_back_left(x_end, y_end):
-    print("back left")
+def manoeuvre_right(x_end, y_end):
     ax = x_end - 6
     ay = y_end - 12
     a_path = np.vstack([np.repeat(ax, 3 / 0.25), np.flip(np.arange(ay - 3, ay, 0.25))]).T
     b_path = np.vstack([np.repeat(x_end, 3 / 0.25), np.flip(np.arange(y_end, y_end + 3, 0.25))]).T
     parking_manoeuvre = park(x_end, y_end, 2)
-    return parking_manoeuvre, a_path, b_path, ax, ay
-
-
-def manoeuvre_forward_left(x_end, y_end):
-    print("forward left")
-    ax = x_end - 6
-    ay = y_end + 12
-    a_path = np.vstack([np.repeat(ax, 3 / 0.25), np.arange(ay, ay + 3, 0.25)]).T
-    b_path = np.vstack([np.repeat(x_end, 3 / 0.25), np.arange(y_end - 3, y_end, 0.25)]).T
-    parking_manoeuvre = park(x_end, y_end, 3)
-    return parking_manoeuvre, a_path, b_path, ax, ay
-
-
-def manoeuvre_forward_right(x_end, y_end):
-    print("forward right")
-    ax = x_end + 6
-    ay = y_end + 12
-    a_path = np.vstack([np.repeat(ax, 3 / 0.25), np.arange(ay, ay + 3, 0.25)]).T
-    b_path = np.vstack([np.repeat(x_end, 3 / 0.25), np.arange(y_end - 3, y_end, 0.25)]).T
-    parking_manoeuvre = park(x_end, y_end, 4)
     return parking_manoeuvre, a_path, b_path, ax, ay
 
 
@@ -120,24 +97,12 @@ def park(x_end, y_end, option):
         y_temp = np.arange(ay, y_end + 1)
         circle = (6.9 ** 2 - (y_temp - ay) ** 2)
         x_temp = (np.sqrt(circle[circle >= 0]) + ax - 6.9)
-    elif option == 2:
+    else:
         ax = x_end - 6
         ay = y_end - 12
         y_temp = np.arange(ay, y_end + 1)
         circle = (6.9 ** 2 - (y_temp - ay) ** 2)
         x_temp = (np.sqrt(circle[circle >= 0]) + ax + 6.9)
-    elif option == 3:
-        ax = x_end - 6
-        ay = y_end + 12
-        y_temp = np.arange(y_end, ay + 1)
-        circle = (6.9 ** 2 - (y_temp - ay) ** 2)
-        x_temp = (np.sqrt(circle[circle >= 0]) + ax + 6.9)
-    else:
-        ax = x_end + 6
-        ay = y_end + 12
-        y_temp = np.arange(y_end, ay + 1)
-        circle = (6.9 ** 2 - (y_temp - ay) ** 2)
-        x_temp = (np.sqrt(circle[circle >= 0]) + ax - 6.9)
 
     y_temp = y_temp[circle >= 0]
 
@@ -148,7 +113,7 @@ def park(x_end, y_end, option):
         x_function = np.append(x_function, x_temp)
         y_function = np.append(y_function, y_temp)
         y_temp = np.arange(ay, y_end + 1)
-    elif option == 2:
+    else:
         x_temp = (x_temp - 2 * (x_temp - (ax + 6.9)))
         choice = x_temp < ax + 6.9 / 2
         x_temp = x_temp[choice]
@@ -156,21 +121,6 @@ def park(x_end, y_end, option):
         x_function = np.append(x_function, x_temp)
         y_function = np.append(y_function, y_temp)
         y_temp = np.arange(ay, y_end + 1)
-    elif option == 3:
-        x_temp = (x_temp - 2 * (x_temp - (ax + 6.9)))
-        choice = x_temp < ax + 6.9 / 2
-        x_temp = x_temp[choice]
-        y_temp = y_temp[choice]
-        x_function = np.append(x_function, np.flip(x_temp))
-        y_function = np.append(y_function, np.flip(y_temp))
-        y_temp = np.arange(y_end, ay + 1)
-    else:
-        choice = x_temp > ax - 6.9 / 2
-        x_temp = x_temp[choice]
-        y_temp = y_temp[choice]
-        x_function = np.append(x_function, np.flip(x_temp))
-        y_function = np.append(y_function, np.flip(y_temp))
-        y_temp = np.arange(y_end, ay + 1)
 
     circle = (6.9 ** 2 - (y_temp - y_end) ** 2)
 
@@ -186,27 +136,23 @@ def park(x_end, y_end, option):
 
     x_temp = x_temp[choice]
     y_temp = y_temp[choice]
-
-    if option == 1 or option == 2:
-        x_function = np.append(x_function, x_temp)
-        y_function = np.append(y_function, y_temp)
-    else:
-        x_function = np.append(x_function, np.flip(x_temp))
-        y_function = np.append(y_function, np.flip(y_temp))
+    x_function = np.append(x_function, x_temp)
+    y_function = np.append(y_function, y_temp)
     parking_manoeuvre = np.vstack([x_function, y_function]).T
+
     return parking_manoeuvre
 
 
 def pathing_helper(x_start, y_start, x_end, y_end, mask, minimum_x, maximum_x, minimum_y, maximum_y, width):
     start_set = dict()
     end_set = dict()
-    start = node(calc_xy_index(x_start, minimum_x), calc_xy_index(y_start, minimum_y), 0.0, -1)
-    end = node(calc_xy_index(x_end, minimum_x), calc_xy_index(y_end, minimum_y), 0.0, -1)
-    start_set[calc_grid_index(start, minimum_x, minimum_y, width)] = start
+    start = get_node_dict(coord_index_calc(x_start, minimum_x), coord_index_calc(y_start, minimum_y), 0.0, -1)
+    end = get_node_dict(coord_index_calc(x_end, minimum_x), coord_index_calc(y_end, minimum_y), 0.0, -1)
+    start_set[grid_calc(start, minimum_x, minimum_y, width)] = start
     while True:
         if not bool(start_set):
             break
-        current_id = min(start_set, key=lambda o: start_set[o]["cost"] + calc_heuristic(end, start_set[o]))
+        current_id = min(start_set, key=lambda o: start_set[o]["cost"] + hypotenuse_calc(end, start_set[o]))
         current_node = start_set[current_id]
         if current_node["x"] == end["x"] and current_node["y"] == end["y"]:
             end["cost"] = current_node["cost"]
@@ -215,10 +161,10 @@ def pathing_helper(x_start, y_start, x_end, y_end, mask, minimum_x, maximum_x, m
         del start_set[current_id]
         end_set[current_id] = current_node
         for count in range(len(motion)):
-            item = node(current_node["x"] + motion[count][0], current_node["y"] + motion[count][1],
-                        current_node["cost"] + motion[count][2], current_id)
-            node_id = calc_grid_index(item, minimum_x, minimum_y, width)
-            if not verify_node(minimum_x, minimum_y, maximum_x, maximum_y, item, mask):
+            item = get_node_dict(current_node["x"] + motion[count][0], current_node["y"] + motion[count][1],
+                                 current_node["cost"] + motion[count][2], current_id)
+            node_id = grid_calc(item, minimum_x, minimum_y, width)
+            if not node_verification(minimum_x, minimum_y, maximum_x, maximum_y, item, mask):
                 continue
             if node_id in end_set:
                 continue
@@ -228,7 +174,7 @@ def pathing_helper(x_start, y_start, x_end, y_end, mask, minimum_x, maximum_x, m
                 start_set[node_id] = item
             else:
                 continue
-    route_x, route_y = calc_final_path(end, end_set, minimum_x, minimum_y)
+    route_x, route_y = path_calc(end, end_set, minimum_x, minimum_y)
     return route_x, route_y
 
 
@@ -237,14 +183,6 @@ def grid_pos(index, pos):
 
 
 def obstacle_mask(obstacles_x, obstacles_y, resolution, agent_radius):
-    """
-
-    :param obstacles_x:
-    :param obstacles_y:
-    :param resolution:
-    :param agent_radius:
-    :return:
-    """
     minimum_x = round(min(obstacles_x))
     maximum_x = round(max(obstacles_x))
     minimum_y = round(min(obstacles_y))
@@ -257,7 +195,7 @@ def obstacle_mask(obstacles_x, obstacles_y, resolution, agent_radius):
         mask.append([])
         for count2 in range(y):
             mask[count].append(False)
-    # mask = [[False for count in range(y)] for count in range(x)]
+
     for temp_x in range(x):
         xa = grid_pos(temp_x, minimum_x)
         for temp_y in range(y):
@@ -269,32 +207,26 @@ def obstacle_mask(obstacles_x, obstacles_y, resolution, agent_radius):
     return mask, minimum_x, maximum_x, minimum_y, maximum_y, x
 
 
-# Rename!
-def node(x, y, cost, index):
+def get_node_dict(x, y, cost, index):
     return {"x": x, "y": y, "cost": cost, "index": index}
 
 
-# Rename!
-def calc_xy_index(coord, min_coord):
+def coord_index_calc(coord, min_coord):
     return round(coord - min_coord)
 
 
-# Rename!
-def calc_grid_index(current, minimum_x, minimum_y, x):
-    # current = (current["x"] - minimum_x) + (x * (current["y"] - minimum_y))
-    current = (current["y"] - minimum_y) * x + (current["x"] - minimum_x)
+def grid_calc(current, minimum_x, minimum_y, x):
+    current = (current["x"] - minimum_x) + (x * (current["y"] - minimum_y))
     return current
 
 
-# Rename!
-def calc_heuristic(a, b):
+def hypotenuse_calc(a, b):
     opposite = a["x"] - b["x"]
     adjacent = a["y"] - b["y"]
     return math.hypot(opposite, adjacent)
 
 
-# Rename!
-def verify_node(minimum_x, minimum_y, maximum_x, maximum_y, current, mask):
+def node_verification(minimum_x, minimum_y, maximum_x, maximum_y, current, mask):
     cx = grid_pos(current["x"], minimum_x)
     cy = grid_pos(current["y"], minimum_y)
     if cx >= maximum_x or cx < minimum_x or cy >= maximum_y or cy < minimum_y:
@@ -304,8 +236,7 @@ def verify_node(minimum_x, minimum_y, maximum_x, maximum_y, current, mask):
     return True
 
 
-# Rename and check logic!
-def calc_final_path(end, closed, minimum_x, minimum_y):
+def path_calc(end, closed, minimum_x, minimum_y):
     final_x = [grid_pos(end["x"], minimum_x)]
     final_y = [grid_pos(end["y"], minimum_y)]
     index = end["index"]
@@ -317,7 +248,7 @@ def calc_final_path(end, closed, minimum_x, minimum_y):
     return final_x, final_y
 
 
-def calc_line_ang(ax, ay, bx, by):
+def angle_calc(ax, ay, bx, by):
     angle = math.atan2(by - ay, bx - ax)
     return angle
 
@@ -332,7 +263,7 @@ def path_interpolation(path, rate):
 
     interpolated_x = scipy.interpolate.make_interp_spline(np.linspace(0.0, len(x) - 1, len(x)), x, k=3)
     interpolated_y = scipy.interpolate.make_interp_spline(np.linspace(0.0, len(x) - 1, len(x)), y, k=3)
-    # travel = np.linspace(0.0, len(x) - 1, len(path) * 3)
+
     final_x = interpolated_x(np.linspace(0.0, len(x) - 1, len(path) * 3))
     final_y = interpolated_y(np.linspace(0.0, len(x) - 1, len(path) * 3))
     return np.vstack([final_x, final_y]).T
