@@ -94,19 +94,20 @@ def tester(selection):
     # Will run either a short or long test depending on user selection.
     # Tests all parking spots or a small list of important parking scenarios.
     if selection == 2:
-        parking_spots = [1, 5, 6, 10, 15]
+        parking_spots = [1, 5, 6, 10]
     else:
         parking_spots = []
         for count in range(1, 21):
             parking_spots.append(count)
     for count in range(0, len(parking_spots)):
-        print("Parking spot", parking_spots[count], "!")
+        print("Testing parking spot", str(parking_spots[count]) + "!")
         main(parking_spots[count], 2)
 
 
 def start():
     # Asks the user how they'd like the program to run.
-    selection = get_start_vars(1, 3, "1) Run normal\n2) Run short test\n3) Run long test\n")
+    selection = get_start_vars(1, 3, "1) Run normal\n2) Run short test  (4 parking scenarios)\n"
+                                     "3) Run long test (All parking scenarios)\n")
     if selection == 1:
         main(0, 1)
     elif selection == 2:

@@ -55,7 +55,7 @@ class ParkingLot:
         path = path.astype(int)
         for p in path:
             self.background[p[1] + 10 * self.margin:p[1] + 10 * self.margin + 3,
-            p[0] + 10 * self.margin:p[0] + 10 * self.margin + 3] = colour
+                            p[0] + 10 * self.margin:p[0] + 10 * self.margin + 3] = colour
 
     def rotate_contours(self, pts, cnt, ang):
         return self.dot(pts - cnt, self.ar([[self.cos(ang), self.sin(ang)], [-self.sin(ang), self.cos(ang)]])) + cnt
@@ -84,15 +84,15 @@ class Cars:
     def __init__(self):
         self.car_object = self.create_car_object()
         self.end = None
-        self.cars = {1: [[37, 18]],
-                     2: [[37, 30]],
-                     3: [[37, 42]],
-                     4: [[37, 54]],
-                     5: [[37, 66]],
-                     6: [[63, 18]],
-                     7: [[63, 30]],
-                     8: [[63, 42]],
-                     9: [[63, 54]],
+        self.cars = {1:  [[37, 18]],
+                     2:  [[37, 30]],
+                     3:  [[37, 42]],
+                     4:  [[37, 54]],
+                     5:  [[37, 66]],
+                     6:  [[63, 18]],
+                     7:  [[63, 30]],
+                     8:  [[63, 42]],
+                     9:  [[63, 54]],
                      10: [[63, 66]],
                      11: [[70, 18]],
                      12: [[70, 30]],
