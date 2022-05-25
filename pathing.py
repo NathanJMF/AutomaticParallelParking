@@ -137,36 +137,57 @@ def park(x_end, y_end, option):
 
 
 def pathing_helper(x_start, y_start, x_end, y_end, mask, minimum_x, maximum_x, minimum_y, maximum_y, width):
+    # This is the A* search algorithm.
     start_dict = dict()
     end_dict = dict()
+    # Manipulates the passed in data into a dictionary for ease of calculation.
+    # Does this for both starting and ending co-ordinates.
     start = get_node_dict(coord_index_calc(x_start, minimum_x), coord_index_calc(y_start, minimum_y), 0.0, -1)
     end = get_node_dict(coord_index_calc(x_end, minimum_x), coord_index_calc(y_end, minimum_y), 0.0, -1)
+    # Populates the start_dict by calling grid_calc and placing the start dictionary inside it.
     start_dict[grid_calc(start, minimum_x, minimum_y, width)] = start
+    # Runs until start_dict is empty.
     while True:
+        # Check if start_dict is empty. If it is then the loop is exited.
         if not bool(start_dict):
             break
+        # Places the current lowest cost + distance from the end point in current_id
         current_id = min(start_dict, key=lambda o: start_dict[o]["cost"] + hypotenuse_calc(end, start_dict[o]))
+        # Finds the full item in start_dict and places it into current_node.
         current_node = start_dict[current_id]
+        # This checks if the current node that is being looked at is the same as the goal node.
+        # If it is, cost and index are then updated and the loop is left.
         if current_node["x"] == end["x"] and current_node["y"] == end["y"]:
             end["cost"] = current_node["cost"]
             end["index"] = current_node["index"]
             break
+        # Removes the current item from the start_dict.
         del start_dict[current_id]
+        # The current item is then added to the end_dict.
         end_dict[current_id] = current_node
+        # This loop uses the motion global variable to look at the next move the agent is able to perform.
+        # Using the available agent motions, the search is expanded.
         for count in range(len(motion)):
             item = get_node_dict(current_node["x"] + motion[count][0], current_node["y"] + motion[count][1],
                                  current_node["cost"] + motion[count][2], current_id)
             node_id = grid_calc(item, minimum_x, minimum_y, width)
+            # Continue if the node is not of a valid move.
             if not node_verification(minimum_x, minimum_y, maximum_x, maximum_y, item, mask):
                 continue
+            # Continue if the node already exists in end_dict.
             if node_id in end_dict:
                 continue
+            # Checks to see if the node exists yet.
+            # If it is a new node it is placed into the start_dict.
             if node_id not in start_dict:
                 start_dict[node_id] = item
+            # Checks if the new item cost is lower than the current node cost.
+            # If it is then, current node is replaced by the new item.
             elif start_dict[node_id]["cost"] > item["cost"]:
                 start_dict[node_id] = item
             else:
                 continue
+    # Returns two lists, holding the X and Y co-ordinates of the path found.
     route_x, route_y = path_calc(end, end_dict, minimum_x, minimum_y)
     return route_x, route_y
 
